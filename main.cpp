@@ -35,7 +35,7 @@ void printUsage() {
 
   printf("Kangaroo [-v] [-t nbThread] [-d dpBit] [gpu] [-check]\n");
   printf("         [-gpuId gpuId1[,gpuId2,...]] [-g g1x,g1y[,g2x,g2y,...]]\n");
-  printf("         inFile\n");
+  printf("         [-S start -E end -P publicKey[,publicKey2,...] | inFile]\n");
   printf(" -v: Print version\n");
   printf(" -gpu: Enable gpu calculation\n");
   printf(" -gpuId gpuId1,gpuId2,...: List of GPU(s) to use, default is 0\n");
@@ -62,7 +62,10 @@ void printUsage() {
   printf(" -o fileName: output result to fileName\n");
   printf(" -l: List cuda enabled devices\n");
   printf(" -check: Check GPU kernel vs CPU\n");
-  printf(" inFile: intput configuration file\n");
+  printf(" -S: the starting point of the search range\n");
+  printf(" -E: the ending point of the search range\n");
+  printf(" -P: comma separated list of public keys to search for\n");
+  printf(" inFile: intput configuration file (overrides command line options)\n");
   exit(0);
 
 }
@@ -164,6 +167,9 @@ static bool serverMode = false;
 static string serverIP = "";
 static string outputFile = "";
 static bool splitWorkFile = false;
+static string startPoint = "";
+static string endPoint = "";
+static vector<string> pubkeyList = { };
 
 int main(int argc, char* argv[]) {
 
@@ -302,6 +308,25 @@ int main(int argc, char* argv[]) {
     } else if(strcmp(argv[a],"-check") == 0) {
       checkFlag = true;
       a++;
+    } else if(strcmp(argv[a],"-S") == 0) {
+      CHECKARG("-S",1);
+      startPoint = string(argv[a]);
+      a++;
+    } else if(strcmp(argv[a],"-E") == 0) {
+      CHECKARG("-E",1);
+      endPoint = string(argv[a]);
+      a++;
+    } else if(strcmp(argv[a],"-P") == 0) {
+      CHECKARG("-P",1);
+      string tmpPubkeyList = string(argv[a]);
+      size_t pos = 0;
+      while ((pos = tmpPubkeyList.find(",")) != std::string::npos) {
+          string token = tmpPubkeyList.substr(0, pos);
+          pubkeyList.push_back(token);
+          tmpPubkeyList.erase(0, pos+1);
+      }
+      pubkeyList.push_back(tmpPubkeyList); // Push the last (or only) key
+      a++;
     } else if(a == argc - 1) {
       configFile = string(argv[a]);
       a++;
@@ -346,16 +371,21 @@ int main(int argc, char* argv[]) {
     } else if(configFile.length()>0) {
       if( !v->ParseConfigFile(configFile) )
         exit(-1);
-    } else {
+    } else if (serverMode) {
       if(serverIP.length()==0) {
         ::printf("No input file to process\n");
         exit(-1);
       }
-    }
-    if(serverMode)
       v->RunServer();
-    else
-      v->Run(nbCPUThread,gpuId,gridSize);
+    }
+    else {
+        if (!v->ParseInlineOptions(startPoint, endPoint, pubkeyList)) {
+            ::printf("No input file to process\n");
+            exit(-1);
+        }
+    }
+    
+    v->Run(nbCPUThread,gpuId,gridSize);
   }
 
   return 0;

@@ -134,6 +134,7 @@ public:
   void Run(int nbThread,std::vector<int> gpuId,std::vector<int> gridSize);
   void RunServer();
   bool ParseConfigFile(std::string &fileName);
+  bool ParseInlineOptions(std::string &start, std::string &end, std::vector<std::string>& pubkeys);
   bool LoadWork(std::string &fileName);
   void Check(std::vector<int> gpuId,std::vector<int> gridSize);
   void MergeDir(std::string& dirname,std::string& dest);

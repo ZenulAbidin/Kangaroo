@@ -145,6 +145,34 @@ bool Kangaroo::ParseConfigFile(std::string &fileName) {
 
 // ----------------------------------------------------------------------------
 
+bool Kangaroo::ParseInlineOptions(std::string &start, std::string &end, std::vector<std::string>& pubkeys) {
+  if (start.empty() || end.empty() || pubkeys.empty()) {
+      ::printf("Start/End/Public keys not specified and no config file available");
+      return false;
+  }
+  rangeStart.SetBase16((char *)start.c_str());
+  rangeEnd.SetBase16((char *)end.c_str());
+  for(int i=0;i<(int)pubkeys.size();i++) {
+    
+    Point p;
+    bool isCompressed;
+    if( !secp->ParsePublicKeyHex(pubkeys[i],p,isCompressed) ) {
+      ::printf("Public key number %d is malformed: %s\n",i,pubkeys[i].c_str());
+      return false;
+    }
+    keysToSearch.push_back(p);
+
+  }
+
+  ::printf("Start:%s\n",rangeStart.GetBase16().c_str());
+  ::printf("Stop :%s\n",rangeEnd.GetBase16().c_str());
+  ::printf("Keys :%d\n",(int)keysToSearch.size());
+
+  return true;
+}
+
+  // ----------------------------------------------------------------------------
+
 bool Kangaroo::IsDP(uint64_t x) {
 
   return (x & dMask) == 0;

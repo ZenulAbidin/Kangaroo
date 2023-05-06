@@ -1,4 +1,4 @@
-# Pollard's kangaroo for SECPK1 with slight mods
+# Pollard's kangaroo for SECPK1, MARK-II
 
 A Pollard's kangaroo interval ECDLP solver for SECP256K1 (based on VanitySearch engine).\
 **This program is limited to a 125bit interval search.**
@@ -24,7 +24,7 @@ Discusion thread: https://bitcointalk.org/index.php?topic=5244940.0
 Kangaroo v2.1
 Kangaroo [-v] [-t nbThread] [-d dpBit] [gpu] [-check]
          [-gpuId gpuId1[,gpuId2,...]] [-g g1x,g1y[,g2x,g2y,...]]
-         inFile
+         [-S start -E end -P publicKey[,publicKey2,...] | inFile]
  -v: Print version
  -gpu: Enable gpu calculation
  -gpuId gpuId1,gpuId2,...: List of GPU(s) to use, default is 0
@@ -51,6 +51,9 @@ Kangaroo [-v] [-t nbThread] [-d dpBit] [gpu] [-check]
  -o fileName: output result to fileName
  -l: List cuda enabled devices
  -check: Check GPU kernel vs CPU
+ -S: the starting point of the search range
+ -E: the ending point of the search range
+ -P: comma separated list of public keys to search for
  inFile: intput configuration file
 ```
 
